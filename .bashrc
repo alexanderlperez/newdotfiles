@@ -1,40 +1,136 @@
-#source ~/.bash-git-prompt/gitprompt.sh
-#source ~/app/git-completion.bash
+# ~/.bashrc: executed by bash(1) for non-login shells.
+# see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
+# for examples
 
-export HISTSIZE=1000000 
-export HISTFILESIZE=1000000
-export HISTCONTROL=ignoredups
-export HISTIGNORE="&:cd:ls:l:cl:c;l:la:[bf]g:exit"
-export LC_ALL='en_US.UTF-8'
+# If not running interactively, don't do anything
+case $- in
+    *i*) ;;
+      *) return;;
+esac
 
-export PATH=$PATH:~/app/
-export PATH="$(yarn global bin):$PATH"
-export CHROME_BINARY="/usr/bin/chromium.sh"
-export CHROME_BIN="/usr/bin/chromium.sh"
-export EDITOR='vim'
-export CLASSPATH=".:/usr/local/lib/antlr-4.8-complete.jar:$CLASSPATH"
+# don't put duplicate lines or lines starting with space in the history.
+# See bash(1) for more options
+HISTCONTROL=ignoreboth
 
-export NPM_PACKAGES="/Users/alexperez\ 1/.npm-packages"
-export NODE_PATH="$NPM_PACKAGES/lib/node_modules:$NODE_PATH"
-export PATH="$NPM_PACKAGES/bin:$PATH"
+# append to the history file, don't overwrite it
+shopt -s histappend
 
-export LC_CTYPE=C 
-export LANG=C
- 
-#set the terminal prompt
-export PS1="\[\e[0;32m\][\w]\n\[\e[0;37m\]\$"
+# for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
+HISTSIZE=1000
+HISTFILESIZE=2000
+
+# check the window size after each command and, if necessary,
+# update the values of LINES and COLUMNS.
+shopt -s checkwinsize
+
+# If set, the pattern "**" used in a pathname expansion context will
+# match all files and zero or more directories and subdirectories.
+#shopt -s globstar
+
+# make less more friendly for non-text input files, see lesspipe(1)
+[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+
+# set variable identifying the chroot you work in (used in the prompt below)
+if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
+    debian_chroot=$(cat /etc/debian_chroot)
+fi
+
+# set a fancy prompt (non-color, unless we know we "want" color)
+case "$TERM" in
+    xterm-color|*-256color) color_prompt=yes;;
+esac
+
+# uncomment for a colored prompt, if the terminal has the capability; turned
+# off by default to not distract the user: the focus in a terminal window
+# should be on the output of commands, not on the prompt
+#force_color_prompt=yes
+
+if [ -n "$force_color_prompt" ]; then
+    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+	# We have color support; assume it's compliant with Ecma-48
+	# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+	# a case would tend to support setf rather than setaf.)
+	color_prompt=yes
+    else
+	color_prompt=
+    fi
+fi
+
+if [ "$color_prompt" = yes ]; then
+    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+else
+    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+fi
+unset color_prompt force_color_prompt
+
+# If this is an xterm set the title to user@host:dir
+case "$TERM" in
+xterm*|rxvt*)
+    PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+    ;;
+*)
+    ;;
+esac
+
+# enable color support of ls and also add handy aliases
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+    #alias dir='dir --color=auto'
+    #alias vdir='vdir --color=auto'
+
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+fi
+
+# colored GCC warnings and errors
+#export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
+
+# some more ls aliases
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+
+# Add an "alert" alias for long running commands.  Use like so:
+#   sleep 10; alert
+alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
+
+# Alias definitions.
+# You may want to put all your additions into a separate file like
+# ~/.bash_aliases, instead of adding them here directly.
+# See /usr/share/doc/bash-doc/examples in the bash-doc package.
+
+if [ -f ~/.bash_aliases ]; then
+    . ~/.bash_aliases
+fi
+
+# enable programmable completion features (you don't need to enable
+# this, if it's already enabled in /etc/bash.bashrc and /etc/profile
+# sources /etc/bash.bashrc).
+if ! shopt -oq posix; then
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+  elif [ -f /etc/bash_completion ]; then
+    . /etc/bash_completion
+  fi
+fi
+
+## USER
 
 #vi edit mode
 set -o vi
 
-# expand aliases for SSH and the like
-shopt -s expand_aliases
+# disable flow control to support Ctrl-S in Vim
+stty -ixon 
 
-#pass through <C-s> without the terminal halting input
-bind -r '\C-s'
-stty -ixon
+export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
 
-#simple bookmarking
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+# simple bookmarking
 function bookmarklist {
     i=0
     while ((i++)); read -r line; do
@@ -47,11 +143,11 @@ function bookmarkopen() {
 }
 function bookmarkpop() {
     line=$(sed -n "$1p" < ~/.bookmarks)
-    sed -i "" "$1d" ~/.bookmarks
+    sed -i "$1d" ~/.bookmarks
     cd $line
 }
 function bookmarkdelete() {
-    sed -i "" "$1d" ~/.bookmarks
+    sed -i "$1d" ~/.bookmarks
 }
 
 # bookmark-related
@@ -61,15 +157,7 @@ alias bo="bookmarkopen"
 alias bp="bookmarkpop"
 alias bd="bookmarkdelete"
 
-alias ls="gls --group-directories-first"
-alias l='ls -lhG'
-alias la='l -a'
-alias c='clear'
-alias cl='clear;la'
-alias p='pwd'
-
-alias v='vim'
-
+alias v='nvim'
 alias src="source ~/.bashrc"
 
 alias tmux="TERM=screen-256color tmux"
@@ -100,67 +188,6 @@ alias gcob='gco -b'
 alias gpsm='git push origin master'
 alias gpum='git pull origin master'
 alias gpspm='git push production master'
-alias gob='gb | fzf | xargs git checkout'
-
-#bookmark current branch
-alias scb='echo `git rev-parse --abbrev-ref HEAD` > /tmp/scb'
-alias gcoc='gco `cat /tmp/scb`'
-
-function gacs { 
-    ga $1
-    gc -m "$2"
-}
-
-alias edhosts='sudo vim /etc/hosts'
-
-# bulk toggle leading # in /etc/hosts 
-# my online vices are there
-tprod() {
-  # in-file state/label
-  local ON='productivity_on'
-  local OFF='productivity_off'
-
-  if grep -q $OFF /etc/hosts; then
-    sudo sed -i '' 's/^#//' /etc/hosts # remove the leading #
-    sudo sed -i '' "s/$OFF/#$ON/" /etc/hosts # update the state/label (and add missing # after trim to the label)
-    echo "on"
-  elif grep -q $ON /etc/hosts; then
-    sudo sed -i '' "s/#$ON/$OFF/" /etc/hosts # update the state/label
-    sudo sed -i '' "s/^/#/" /etc/hosts # add the leading #
-    echo "off"
-  fi
-}
 
 alias hisgrep='history | grep'
-alias chrome='open -a "Google Chrome"'
-alias fnr="while true ; do clear; node server.js || terminal-notifier -message \"Node crashed\" ; done"
-alias bsync='browser-sync start --server --files="*.html, js/*.js, css/*.css"'
-
-# Unset manpath so we can inherit from /etc/manpath via the `manpath`
-# command
-unset MANPATH  # delete if you already modified MANPATH elsewhere in your config
-export MANPATH="$NPM_PACKAGES/share/man:$(manpath)"
-alias dbh="ssh existcreate@devbrainhack.co"
-alias mcraft="ssh existcreate@45.55.245.49"
-
-export NVM_DIR="/Users/alexperez/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
-alias psgrep='ps aux | grep '
-
-# canvs-related
-alias canvsdb='ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.ssh/new_id_rsa -L27018:localhost:27017 ubuntu@ec2-54-87-50-176.compute-1.amazonaws.com'
-
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-alias crn="npx cypress run --config video=false"
-alias tm="terminal-notifier -message"
-alias sync="git fetch upstream test && git reset --hard upstream/test"
-alias movies="node future_releases.js ; while true; do terminal-notifier -message 'CHECK ME' ; done"
-alias moviesfuture="node future_releases.js --future ; while true; do terminal-notifier -message 'CHECK ME' ; done"
-alias gsl="git stash list"
-alias gsa="git stash apply"
-alias xargs="xargs "
-alias ass='gsl | fzf | awk "{print }" | sed "s/://" | xargs gsa' # TODO: wtf how to escape correctly
-
-# antlr
-alias antlr='java -jar /usr/local/lib/antlr-4.8-complete.jar'
-alias grun='java org.antlr.v4.gui.TestRig'
+alias c='clear'
